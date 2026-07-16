@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Nueva carta · {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Nueva carta de porte</h1>
+<p class="meta">Se crea primero como borrador. El PDF y el QR se generan al emitir.</p>
+{% if not parties or not locations or not drivers or not vehicles %}
+<div class="alert alert-warning">Antes de crear una carta debe dar de alta empresas, ubicaciones, conductores y vehículos en <a href="/catalogs">Catálogos</a>.</div>
+{% else %}
+<form method="post" action="/shipments">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <fieldset>
+    <legend>Fecha e intervinientes</legend>
+    <div class="grid-3">
+      <div><label>Fecha del servicio</label><input type="date" name="service_date" value="{{ today }}" required></div>
+      <div><label>Cargador contractual</label><select name="contractual_loader_id" required>{% for x in parties %}<option value="{{ x.id }}">{{ x.name }} · {{ x.nif }}</option>{% endfor %}</select></div>
+      <div><label>Transportista efectivo</label><select name="effective_carrier_id" required>{% for x in parties %}<option value="{{ x.id }}">{{ x.name }} · {{ x.nif }}</option>{% endfor %}</select></div>
+      <div><label>Expedidor</label><select name="consignor_id" required>{% for x in parties %}<option value="{{ x.id }}">{{ x.name }} · {{ x.nif }}</option>{% endfor %}</select></div>
+      <div><label>Destinatario</label><select name="consignee_id" required>{% for x in parties %}<option value="{{ x.id }}">{{ x.name }} · {{ x.nif }}</option>{% endfor %}</select></div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Ruta, conductor y vehículo</legend>
+    <div class="grid">
+      <div><label>Origen</label><select name="origin_id" required>{% for x in locations %}<option value="{{ x.id }}">{{ x.name }} · {{ x.city or '' }}</option>{% endfor %}</select></div>
+      <div><label>Destino</label><select name="destination_id" required>{% for x in locations %}<option value="{{ x.id }}">{{ x.name }} · {{ x.city or '' }}</option>{% endfor %}</select></div>
+      <div><label>Conductor</label><select name="driver_id" required>{% for x in drivers %}<option value="{{ x.id }}">{{ x.full_name }} · {{ x.phone }}</option>{% endfor %}</select></div>
+      <div><label>Vehículo</label><select name="vehicle_id" required>{% for x in vehicles %}<option value="{{ x.id }}">{{ x.tractor_plate }} / {{ x.trailer_plate or '—' }}</option>{% endfor %}</select></div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Mercancía</legend>
+    <div><label>Naturaleza de la mercancía</label><textarea name="goods_nature" required></textarea></div>
+    <div class="grid-3">
+      <div><label>Peso total (kg)</label><input name="total_weight_kg" inputmode="decimal" required></div>
+      <div><label>N.º de bultos</label><input name="packages" inputmode="numeric"></div>
+      <div><label>Autorización especial</label><input name="special_authorization"></div>
+    </div>
+    <div class="grid">
+      <div><label>Observaciones</label><textarea name="observations"></textarea></div>
+      <div><label>Reservas iniciales</label><textarea name="reservations"></textarea></div>
+    </div>
+  </fieldset>
+  <div class="actions"><button type="submit">Guardar borrador</button><a class="button light" href="/">Cancelar</a></div>
+</form>
+{% endif %}
+{% endblock %}

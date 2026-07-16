@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prueba de entrega · {{ app_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+<main><div class="container mobile-shell">
+  <div class="card">
+    <h1>Prueba de entrega</h1>
+    <p><strong>{{ shipment.document_number }}</strong></p>
+    <p>{{ (shipment.origin or {}).get('name','—') }} → {{ (shipment.destination or {}).get('name','—') }}</p>
+    <p class="meta">Mercancía: {{ shipment.goods_nature }} · {{ shipment.total_weight_kg }} kg</p>
+    {% if current_url %}<a class="button light" href="{{ current_url }}">Descargar carta de porte</a>{% endif %}
+  </div>
+  {% if submitted %}
+  <div class="alert alert-success">La prueba de entrega ya está registrada. Se ha generado una versión final del documento.</div>
+  {% if current_url %}<a class="button" href="{{ current_url }}">Descargar documento final</a>{% endif %}
+  {% else %}
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      <div><label>Nombre de quien recibe</label><input name="recipient_name" required></div>
+      <div><label>NIF / identificación</label><input name="recipient_nif"></div>
+      <div><label>Reservas, daños o incidencias</label><textarea name="reservations" placeholder="Indique Sin reservas cuando corresponda"></textarea></div>
+      <div class="grid">
+        <div><label>Fotografía o justificante</label><input type="file" name="proof_file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
+        <div><label>Firma en imagen</label><input type="file" name="signature_file" accept="image/jpeg,image/png,image/webp"></div>
+      </div>
+      <input type="hidden" name="latitude" id="latitude">
+      <input type="hidden" name="longitude" id="longitude">
+      <button type="submit" class="success">Confirmar entrega</button>
+    </form>
+  </div>
+  <script>
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        document.getElementById('latitude').value = pos.coords.latitude;
+        document.getElementById('longitude').value = pos.coords.longitude;
+      });
+    }
+  </script>
+  {% endif %}
+</div></main>
+</body>
+</html>

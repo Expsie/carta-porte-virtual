@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Transportes · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="actions" style="justify-content:space-between;margin-bottom:18px">
+  <div>
+    <h1>Cartas de porte</h1>
+    <div class="meta">Documentos, versiones y estado de entrega.</div>
+  </div>
+  <a class="button" href="/shipments/new">Crear nueva</a>
+</div>
+<div class="card table-wrap">
+  <table>
+    <thead>
+      <tr><th>Número</th><th>Fecha</th><th>Ruta</th><th>Estado</th><th>Versión</th><th>Acción</th></tr>
+    </thead>
+    <tbody>
+    {% for s in shipments %}
+      <tr>
+        <td><strong>{{ s.document_number }}</strong><br><span class="meta">{{ s.created_at }}</span></td>
+        <td>{{ s.service_date }}</td>
+        <td>{{ (s.origin or {}).get('name','—') }} → {{ (s.destination or {}).get('name','—') }}</td>
+        <td><span class="badge badge-{{ s.status }}">{{ s.status }}</span></td>
+        <td>{{ s.current_version }}</td>
+        <td><a class="button light" href="/shipments/{{ s.id }}">Abrir</a></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6">Todavía no hay transportes registrados.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

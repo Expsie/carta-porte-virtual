@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <div class="nav-left">
+      <span class="brand">{{ app_name }}</span>
+      {% if authenticated %}
+      <a href="/">Transportes</a>
+      <a href="/shipments/new">Nueva carta</a>
+      <a href="/catalogs">Catálogos</a>
+      {% endif %}
+    </div>
+    {% if authenticated %}
+    <div class="nav-right">
+      <form method="post" action="/logout" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="light" type="submit">Cerrar sesión</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</header>
+<main>
+  <div class="container">
+    {% if flash %}
+      <div class="alert alert-{{ flash.category }}">{{ flash.message }}</div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</main>
+<footer><div class="container">{{ app_name }} · {{ year }}</div></footer>
+</body>
+</html>

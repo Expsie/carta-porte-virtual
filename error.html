@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}{{ shipment.document_number }} · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="actions" style="justify-content:space-between;margin-bottom:18px">
+  <div>
+    <h1>{{ shipment.document_number }}</h1>
+    <div class="meta">Creado {{ shipment.created_at }} · servicio {{ shipment.service_date }}</div>
+  </div>
+  <span class="badge badge-{{ shipment.status }}">{{ shipment.status }}</span>
+</div>
+
+<div class="grid-4">
+  <div class="card"><div class="meta">Versión actual</div><div class="kpi">{{ shipment.current_version }}</div></div>
+  <div class="card"><div class="meta">Peso</div><div class="kpi">{{ shipment.total_weight_kg }} kg</div></div>
+  <div class="card"><div class="meta">Origen</div><strong>{{ (shipment.origin or {}).get('name','—') }}</strong></div>
+  <div class="card"><div class="meta">Destino</div><strong>{{ (shipment.destination or {}).get('name','—') }}</strong></div>
+</div>
+
+<div class="card">
+  <h2>Documento actual</h2>
+  {% if current_url %}
+    <code class="url">{{ current_url }}</code>
+    <div class="actions" style="margin-top:12px">
+      <a class="button" href="{{ current_url }}">Descargar PDF</a>
+      {% if whatsapp_url %}<a class="button success" href="{{ whatsapp_url }}" target="_blank" rel="noopener">Compartir por WhatsApp</a>{% endif %}
+      <form method="post" action="/shipments/{{ shipment.id }}/send" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="secondary">Enviar al conductor</button>
+      </form>
+      {% if shipment.status == 'issued' %}
+      <form method="post" action="/shipments/{{ shipment.id }}/start" class="inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="warning">Iniciar servicio</button>
+      </form>
+      {% endif %}
+    </div>
+  {% else %}
+    <p>El borrador todavía no tiene PDF.</p>
+    <form method="post" action="/shipments/{{ shipment.id }}/issue">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit">Emitir PDF y QR</button>
+    </form>
+  {% endif %}
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Intervinientes</h2>
+    <p><strong>Cargador contractual</strong><br>{{ (shipment.contractual_loader or {}).get('name','—') }} · {{ (shipment.contractual_loader or {}).get('nif','—') }}</p>
+    <p><strong>Transportista efectivo</strong><br>{{ (shipment.effective_carrier or {}).get('name','—') }} · {{ (shipment.effective_carrier or {}).get('nif','—') }}</p>
+    <p><strong>Expedidor</strong><br>{{ (shipment.consignor or {}).get('name','—') }}</p>
+    <p><strong>Destinatario</strong><br>{{ (shipment.consignee or {}).get('name','—') }}</p>
+  </div>
+  <div class="card">
+    <h2>Operativa</h2>
+    <p><strong>Conductor</strong><br>{{ (shipment.driver or {}).get('full_name','—') }} · {{ (shipment.driver or {}).get('phone','—') }}</p>
+    <p><strong>Matrículas</strong><br>{{ (shipment.vehicle or {}).get('tractor_plate','—') }} / {{ (shipment.vehicle or {}).get('trailer_plate','—') }}</p>
+    <p><strong>Mercancía</strong><br>{{ shipment.goods_nature }}</p>
+    <p><strong>Observaciones</strong><br>{{ shipment.observations or '—' }}</p>
+    <p><strong>Reservas</strong><br>{{ shipment.reservations or '—' }}</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Prueba de entrega móvil</h2>
+  <code class="url">{{ delivery_url }}</code>
+  {% if shipment.proof %}
+    <div class="alert alert-success" style="margin-top:12px">Entrega registrada por {{ shipment.proof.recipient_name }} el {{ shipment.proof.delivered_at }}.</div>
+  {% else %}
+    <p class="meta">El conductor o destinatario puede abrir este enlace para registrar receptor, reservas y adjuntar firma o fotografía.</p>
+  {% endif %}
+</div>
+
+{% if shipment.status != 'cancelled' %}
+<div class="card">
+  <h2>{% if shipment.current_version > 0 %}Modificar y generar nueva versión{% else %}Editar borrador{% endif %}</h2>
+  <p class="meta">{% if shipment.current_version > 0 %}Los datos anteriores quedan conservados. El cambio genera un nuevo PDF, una URL y un QR nuevos.{% else %}Corrija los datos antes de emitir el primer PDF.{% endif %}</p>
+  <form method="post" action="/shipments/{{ shipment.id }}/update">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div><label>Motivo obligatorio del cambio</label><input name="reason" required placeholder="Cambio de matrícula, cambio de destino, incidencia..."></div>
+    <div class="grid-3">
+      <div><label>Fecha de servicio</label><input type="date" name="service_date" value="{{ shipment.service_date }}" required></div>
+      <div><label>Cargador contractual</label><select name="contractual_loader_id">{% for x in parties %}<option value="{{ x.id }}" {% if x.id == shipment.contractual_loader_id %}selected{% endif %}>{{ x.name }}</option>{% endfor %}</select></div>
+      <div><label>Transportista efectivo</label><select name="effective_carrier_id">{% for x in parties %}<option value="{{ x.id }}" {% if x.id == shipment.effective_carrier_id %}selected{% endif %}>{{ x.name }}</option>{% endfor %}</select></div>
+      <div><label>Expedidor</label><select name="consignor_id">{% for x in parties %}<option value="{{ x.id }}" {% if x.id == shipment.consignor_id %}selected{% endif %}>{{ x.name }}</option>{% endfor %}</select></div>
+      <div><label>Destinatario</label><select name="consignee_id">{% for x in parties %}<option value="{{ x.id }}" {% if x.id == shipment.consignee_id %}selected{% endif %}>{{ x.name }}</option>{% endfor %}</select></div>
+      <div><label>Origen</label><select name="origin_id">{% for x in locations %}<option value="{{ x.id }}" {% if x.id == shipment.origin_id %}selected{% endif %}>{{ x.name }}</option>{% endfor %}</select></div>
+      <div><label>Destino</label><select name="destination_id">{% for x in locations %}<option value="{{ x.id }}" {% if x.id == shipment.destination_id %}selected{% endif %}>{{ x.name }}</option>{% endfor %}</select></div>
+      <div><label>Conductor</label><select name="driver_id">{% for x in drivers %}<option value="{{ x.id }}" {% if x.id == shipment.driver_id %}selected{% endif %}>{{ x.full_name }}</option>{% endfor %}</select></div>
+      <div><label>Vehículo</label><select name="vehicle_id">{% for x in vehicles %}<option value="{{ x.id }}" {% if x.id == shipment.vehicle_id %}selected{% endif %}>{{ x.tractor_plate }} / {{ x.trailer_plate or '—' }}</option>{% endfor %}</select></div>
+    </div>
+    <div><label>Naturaleza de la mercancía</label><textarea name="goods_nature" required>{{ shipment.goods_nature }}</textarea></div>
+    <div class="grid-3">
+      <div><label>Peso total kg</label><input name="total_weight_kg" value="{{ shipment.total_weight_kg }}" required></div>
+      <div><label>Bultos</label><input name="packages" value="{{ shipment.packages or '' }}"></div>
+      <div><label>Autorización especial</label><input name="special_authorization" value="{{ shipment.special_authorization or '' }}"></div>
+    </div>
+    <div class="grid">
+      <div><label>Observaciones / incidencias</label><textarea name="observations">{{ shipment.observations or '' }}</textarea></div>
+      <div><label>Reservas</label><textarea name="reservations">{{ shipment.reservations or '' }}</textarea></div>
+    </div>
+    <button type="submit" class="warning">{% if shipment.current_version > 0 %}Guardar cambio y generar versión{% else %}Guardar borrador{% endif %}</button>
+  </form>
+</div>
+{% endif %}
+
+<div class="grid">
+  <div class="card table-wrap">
+    <h2>Versiones</h2>
+    <table><thead><tr><th>V.</th><th>Fecha</th><th>Motivo</th><th>Hash</th><th>PDF</th></tr></thead><tbody>
+    {% for d in documents %}
+      <tr><td>{{ d.version }}</td><td>{{ d.created_at }}</td><td>{{ d.reason }}</td><td><code>{{ d.sha256[:12] }}…</code></td><td><a href="/d/{{ d.public_token }}.pdf">Descargar</a></td></tr>
+    {% else %}<tr><td colspan="5">Sin versiones</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+  <div class="card table-wrap">
+    <h2>Trazabilidad</h2>
+    <table><thead><tr><th>Fecha</th><th>Evento</th><th>Actor</th></tr></thead><tbody>
+    {% for e in shipment.events %}<tr><td>{{ e.created_at }}</td><td>{{ e.event_type }}</td><td>{{ e.actor }}</td></tr>{% else %}<tr><td colspan="3">Sin eventos</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+</div>
+{% endblock %}

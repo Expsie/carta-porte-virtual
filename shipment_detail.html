@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Catálogos · {{ app_name }}{% endblock %}
+{% block content %}
+<h1>Catálogos maestros</h1>
+<p class="meta">Alta de empresas, orígenes/destinos, conductores y matrículas.</p>
+<div class="grid">
+  <div class="card">
+    <h2>Empresa / interviniente</h2>
+    <form method="post" action="/catalogs/parties">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="grid">
+        <div><label>Razón social</label><input name="name" required></div>
+        <div><label>NIF</label><input name="nif" required></div>
+      </div>
+      <div><label>Dirección</label><input name="address" required></div>
+      <div class="grid-3">
+        <div><label>CP</label><input name="postal_code"></div>
+        <div><label>Municipio</label><input name="city"></div>
+        <div><label>Provincia</label><input name="province"></div>
+      </div>
+      <div class="grid">
+        <div><label>País</label><input name="country" value="España"></div>
+        <div><label>Contacto</label><input name="contact_name"></div>
+        <div><label>Teléfono</label><input name="phone"></div>
+        <div><label>Email</label><input name="email" type="email"></div>
+      </div>
+      <div><label>Notas</label><textarea name="notes"></textarea></div>
+      <button type="submit">Dar de alta</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Origen o destino</h2>
+    <form method="post" action="/catalogs/locations">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div><label>Nombre</label><input name="name" required></div>
+      <div><label>Dirección</label><input name="address" required></div>
+      <div class="grid-3">
+        <div><label>CP</label><input name="postal_code"></div>
+        <div><label>Municipio</label><input name="city"></div>
+        <div><label>Provincia</label><input name="province"></div>
+      </div>
+      <div class="grid">
+        <div><label>País</label><input name="country" value="España"></div>
+        <div><label>Contacto</label><input name="contact_name"></div>
+        <div><label>Teléfono</label><input name="phone"></div>
+        <div><label>Email</label><input name="email" type="email"></div>
+      </div>
+      <div><label>Notas</label><textarea name="notes"></textarea></div>
+      <button type="submit">Dar de alta</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Conductor</h2>
+    <form method="post" action="/catalogs/drivers">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div><label>Nombre completo</label><input name="full_name" required></div>
+      <div class="grid">
+        <div><label>NIF</label><input name="nif"></div>
+        <div><label>Teléfono</label><input name="phone" placeholder="+34600000000" required></div>
+        <div><label>Email</label><input name="email" type="email"></div>
+        <div><label>Permiso</label><input name="license_number"></div>
+      </div>
+      <div><label>Notas</label><textarea name="notes"></textarea></div>
+      <button type="submit">Dar de alta</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Vehículo</h2>
+    <form method="post" action="/catalogs/vehicles">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div class="grid">
+        <div><label>Matrícula tractora</label><input name="tractor_plate" required></div>
+        <div><label>Matrícula remolque</label><input name="trailer_plate"></div>
+      </div>
+      <div><label>Tipo</label><input name="vehicle_type" placeholder="Tráiler, rígido, furgón..."></div>
+      <div><label>Notas</label><textarea name="notes"></textarea></div>
+      <button type="submit">Dar de alta</button>
+    </form>
+  </div>
+</div>
+
+<div class="card table-wrap">
+  <h2>Empresas</h2>
+  <table><thead><tr><th>Nombre</th><th>NIF</th><th>Dirección</th><th>Contacto</th></tr></thead><tbody>
+  {% for x in parties %}<tr><td>{{ x.name }}</td><td>{{ x.nif }}</td><td>{{ x.address }} · {{ x.city or '' }}</td><td>{{ x.phone or '' }} {{ x.email or '' }}</td></tr>{% else %}<tr><td colspan="4">Sin datos</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+<div class="grid">
+  <div class="card table-wrap"><h2>Ubicaciones</h2><table><tbody>{% for x in locations %}<tr><td><strong>{{ x.name }}</strong><br>{{ x.address }} · {{ x.city or '' }}</td></tr>{% else %}<tr><td>Sin datos</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card table-wrap"><h2>Conductores</h2><table><tbody>{% for x in drivers %}<tr><td><strong>{{ x.full_name }}</strong><br>{{ x.phone }}</td></tr>{% else %}<tr><td>Sin datos</td></tr>{% endfor %}</tbody></table></div>
+  <div class="card table-wrap"><h2>Vehículos</h2><table><tbody>{% for x in vehicles %}<tr><td><strong>{{ x.tractor_plate }}</strong> / {{ x.trailer_plate or '—' }}<br>{{ x.vehicle_type or '' }}</td></tr>{% else %}<tr><td>Sin datos</td></tr>{% endfor %}</tbody></table></div>
+</div>
+{% endblock %}

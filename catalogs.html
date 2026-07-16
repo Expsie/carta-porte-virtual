@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Acceso · {{ app_name }}{% endblock %}
+{% block content %}
+<div class="card login-card">
+  <h1>Acceso</h1>
+  <p class="meta">Administración protegida. Las descargas para inspección usan enlaces independientes sin contraseña.</p>
+  <form method="post" action="/login">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div style="margin-bottom:14px">
+      <label>Usuario</label>
+      <input name="username" autocomplete="username" required>
+    </div>
+    <div style="margin-bottom:16px">
+      <label>Contraseña</label>
+      <input name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit">Entrar</button>
+  </form>
+</div>
+{% endblock %}
