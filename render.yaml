@@ -14,10 +14,11 @@ services:
       - key: ADMIN_PASSWORD
         sync: Maldivas@2027
       - key: SUPABASE_URL
-        sync: APP_BASE_URL=https://carta-porte-virtual-xxxx.onrender.com
+        sync: APP_BASE_URL=https://carta-porte-virtual-LLS.onrender.com
       - key: SUPABASE_SERVICE_ROLE_KEY 
         sync: https://tavxiavguoesqukntyfe.supabase.co
       - key: SUPABASE_BUCKET
         value: deca-private
       - key: RETENTION_DAYS
         value: 365
+        
