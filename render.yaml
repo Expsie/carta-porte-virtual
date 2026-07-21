@@ -14,7 +14,7 @@ services:
       - key: ADMIN_PASSWORD
         sync: 
       - key: SUPABASE_URL
-        sync: APP_BASE_URL
+        sync: 
       - key: SUPABASE_SERVICE_ROLE_KEY 
         sync: 
       - key: SUPABASE_BUCKET
