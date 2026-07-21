@@ -5,18 +5,18 @@ services:
     plan: starter
     healthCheckPath: /health
     envVars:
-      - key: APP_BASE_URL 
-        sync: 
+      - key: APP_BASE_URL
+        sync: false
       - key: SESSION_SECRET
         generateValue: true
       - key: ADMIN_USERNAME
-        value: admin 
+        value: admin
       - key: ADMIN_PASSWORD
-        sync: 
+        sync: false
       - key: SUPABASE_URL
-        sync: 
-      - key: SUPABASE_SERVICE_ROLE_KEY 
-        sync: 
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
       - key: SUPABASE_BUCKET
         value: deca-private
       - key: RETENTION_DAYS
